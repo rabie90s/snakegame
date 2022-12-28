@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:snakegame/blank_pixel.dart';
@@ -37,40 +38,81 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void eatFood() {
+    // Make sure that the food position not on the same position of the snake:
+    while (snakePos.contains(foodPos)) {
+      foodPos = Random().nextInt(squaresNo);
+    }
+  }
+
+  bool isGameOver() {
+    // The game is over when the snake runs into itself, this occures when there is a duplicate position in the snakePos list:
+
+    // this list is the body of the snake (no head):
+    List<int> snakeBody = snakePos.sublist(0, snakePos.length - 1);
+
+    if (snakeBody.contains(snakePos.last)) {
+      return true;
+    }
+    return false;
+  }
+
   void moveSnake() {
     switch (currentDirection) {
       case snake_direction.RIGHT:
         {
           // Add a new Head to the snake = last elemnt in the snakePos List:
-          snakePos.add(snakePos.last + 1);
-          // Remove the Tail = First elemnt in the snakePos List:
-          snakePos.removeAt(0);
+          // check if Snake at the right wall => need to re-adjust:
+          if (snakePos.last % rowSize == 9) {
+            snakePos.add(snakePos.last + 1 - rowSize);
+          } else {
+            snakePos.add(snakePos.last + 1);
+          }
         }
         break;
       case snake_direction.LEFT:
         {
           // Add a new Head to the snake = last elemnt in the snakePos List:
-          snakePos.add(snakePos.last - 1);
-          // Remove the Tail = First elemnt in the snakePos List:
-          snakePos.removeAt(0);
+          // check if Snake at the left wall => need to re-adjust:
+          if (snakePos.last % rowSize == 0) {
+            snakePos.add(snakePos.last - 1 + rowSize);
+          } else {
+            snakePos.add(snakePos.last - 1);
+          }
         }
         break;
       case snake_direction.UP:
         {
           // Add a new Head to the snake = last elemnt in the snakePos List:
-          snakePos.add(snakePos.last - rowSize);
-          // Remove the Tail = First elemnt in the snakePos List:
-          snakePos.removeAt(0);
+          // check if Snake at the upper wall => need to re-adjust:
+          if (snakePos.last < rowSize) {
+            snakePos.add(snakePos.last - rowSize + squaresNo);
+          } else {
+            snakePos.add(snakePos.last - rowSize);
+          }
         }
         break;
       case snake_direction.DOWN:
         {
           // Add a new Head to the snake = last elemnt in the snakePos List:
-          snakePos.add(snakePos.last + rowSize);
-          // Remove the Tail = First elemnt in the snakePos List:
-          snakePos.removeAt(0);
+          // check if Snake at the down wall => need to re-adjust:
+          if (snakePos.last + rowSize > squaresNo) {
+            snakePos.add(snakePos.last + rowSize - squaresNo);
+          } else {
+            snakePos.add(snakePos.last + rowSize);
+          }
         }
         break;
+    }
+    if (snakePos.last == foodPos) {
+      eatFood();
+    } else {
+      // Remove the Tail = First elemnt in the snakePos List:
+      snakePos.removeAt(0);
+    }
+
+    if (snakePos.last < snakePos.length) {
+      print('Dead..... ');
     }
   }
 
@@ -88,10 +130,12 @@ class _HomePageState extends State<HomePage> {
           flex: 3,
           child: GestureDetector(
             onVerticalDragUpdate: (details) {
-              if (details.delta.dy > 0 && currentDirection != snake_direction.UP) {
+              if (details.delta.dy > 0 &&
+                  currentDirection != snake_direction.UP) {
                 currentDirection = snake_direction.DOWN;
               }
-              if (details.delta.dy < 0 && currentDirection != snake_direction.DOWN) {
+              if (details.delta.dy < 0 &&
+                  currentDirection != snake_direction.DOWN) {
                 currentDirection = snake_direction.UP;
               }
 
@@ -101,10 +145,12 @@ class _HomePageState extends State<HomePage> {
               }
             },
             onHorizontalDragUpdate: (details) {
-              if (details.delta.dx > 0 && currentDirection != snake_direction.LEFT) {
+              if (details.delta.dx > 0 &&
+                  currentDirection != snake_direction.LEFT) {
                 currentDirection = snake_direction.RIGHT;
               }
-              if (details.delta.dx < 0 && currentDirection != snake_direction.RIGHT) {
+              if (details.delta.dx < 0 &&
+                  currentDirection != snake_direction.RIGHT) {
                 currentDirection = snake_direction.LEFT;
               }
             },
