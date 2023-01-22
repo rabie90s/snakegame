@@ -20,6 +20,8 @@ class _HomePageState extends State<HomePage> {
   int rowSize = 10;
   int squaresNo = 100;
 
+  int current_score = 0;
+
   // Snake position:
   List<int> snakePos = [0, 1, 2];
 
@@ -34,11 +36,59 @@ class _HomePageState extends State<HomePage> {
     Timer.periodic(Duration(milliseconds: 200), (timer) {
       setState(() {
         moveSnake();
+
+        // check if the game over
+        if (isGameOver()) {
+          timer.cancel();
+          // Display a msg to the user
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text('Game Over'),
+                  content: Column(
+                    children: [
+                      Text('Your score is: ' + current_score.toString()),
+                      TextField(
+                        decoration: InputDecoration(hintText: 'Enter name'),
+                      )
+                    ],
+                  ),
+                  actions: [
+                    MaterialButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        submitScore();
+                        newGame();
+                      },
+                      child: Text('Submit'),
+                      color: Colors.pink,
+                    ),
+                  ],
+                );
+              });
+        }
       });
     });
   }
 
+  void submitScore() {
+    //
+  }
+
+  void newGame() {
+    setState(() {
+      snakePos = [0, 1, 2];
+      foodPos = 55;
+      currentDirection = snake_direction.RIGHT;
+      current_score = 0;
+      gameHasStarted = false;
+    });
+  }
+
   void eatFood() {
+    current_score++;
     // Make sure that the food position not on the same position of the snake:
     while (snakePos.contains(foodPos)) {
       foodPos = Random().nextInt(squaresNo);
@@ -110,10 +160,6 @@ class _HomePageState extends State<HomePage> {
       // Remove the Tail = First elemnt in the snakePos List:
       snakePos.removeAt(0);
     }
-
-    if (snakePos.last < snakePos.length) {
-      print('Dead..... ');
-    }
   }
 
   @override
@@ -123,7 +169,31 @@ class _HomePageState extends State<HomePage> {
       body: Column(children: [
         //High scores
         Expanded(
-          child: Container(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // User current score:
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Your score: ',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    current_score.toString(),
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+
+              // High scores
+              Text(
+                ' High scores .. ',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
         //Game grid
         Expanded(
